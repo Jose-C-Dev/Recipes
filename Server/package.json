@@ -1,4 +1,10 @@
 {
+  "name": "recipes-server",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "https://github.com/Jose-C-Dev/Recipes.git",
+  "author": "Jose-C-Dev",
+
   "dependencies": {
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
