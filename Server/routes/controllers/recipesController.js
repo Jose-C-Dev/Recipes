@@ -1,48 +1,47 @@
 const router = require('express').Router()
 const { validate } = require('indicative/validator')
+const Recipes = require('../services/recipes')
 
-const db = require('../../db')
 
-router.get('/', (req, res) => {
+/* router.get('/', (req, res) => {
   const { limit, page } = req.query
 
   const _limit = +limit || 20
   const _page = +page || 1
 
-  db.query('SELECT COUNT(id) FROM todos', (error, countResults, _) => {
-    if (error) {
-      throw error
-    }
+  recipes, total, pageCount = Recipes.getAllRecipes(_page, _limit)
 
-    const offset = (_page - 1) * _limit
-    const total = countResults[0]['COUNT(id)']
-    const pageCount = Math.ceil(total / _limit)
-
-    db.query('SELECT * FROM todos LIMIT ?, ?', [offset, _limit], (error, results, _) => {
-      if (error) {
-        throw error
+  res.send({
+    code: 200,
+    meta: {
+      pagination: {
+        total: total,
+        pages: pageCount,
+        page: _page,
+        limit: _limit
       }
+    },
+    data: recipes
+  })
+}) */
 
-      res.send({
-        code: 200,
-        meta: {
-          pagination: {
-            total: total,
-            pages: pageCount,
-            page: _page,
-            limit: _limit
-          }
-        },
-        data: results
-      })
+router.get('/', (req, res) => {
+
+  Recipes.getAltRecipes().then((recipes) => {
+    res.send({
+      code: 200,
+      data: recipes
     })
+  }).catch((error) => {
+    res.status(500).send(error)
   })
 })
+
 
 router.get('/:id', (req, res) => {
   const { id } = req.params
 
-  db.query(`SELECT * FROM todos WHERE id = ${id}`, (error, results) => {
+  db.query(`SELECT * FROM recipes WHERE recipeId = ${id}`, (error, results) => {
     if (error) {
       throw error
     }
@@ -59,18 +58,18 @@ router.post('/', (req, res) => {
   const todo = req.body
 
   validate(todo, {
-    title: 'required',
-    user_id: 'required|integer',
-    completed: 'boolean',
+    name: 'required',
+    UseruserId: 'required|integer',
+    visible: 'boolean',
   }).then((value) => {
-    db.query('INSERT INTO todos SET ?', [value], (error, results, _) => {
+    db.query('INSERT INTO recipes SET ?', [value], (error, results, _) => {
       if (error) {
         throw error
       }
 
       const { insertId } = results
 
-      db.query('SELECT * FROM todos WHERE id = ? LIMIT 1', [insertId], (error, results, _) => {
+      db.query('SELECT * FROM recipes WHERE recipeId = ? LIMIT 1', [insertId], (error, results, _) => {
         if (error) {
           throw error
         }
@@ -116,7 +115,7 @@ router.put('/:id', (req, res) => {
   })
 })
 
-router.patch('/:id/completed', (req, res) => {
+router.patch('/:id/approval', (req, res) => {
   const { id } = req.params
 
   const data = req.body
@@ -124,12 +123,12 @@ router.patch('/:id/completed', (req, res) => {
   validate(data, {
     completed: 'boolean',
   }).then((value) => {
-    db.query(`UPDATE todos SET completed = ${value.completed} WHERE id = ${id}`, (error, results, _) => {
+    db.query(`UPDATE recipes SET approval = ${value.approval} WHERE id = ${id}`, (error, results, _) => {
       if (error) {
         throw error
       }
 
-      res.send(value.completed)
+      res.send(value.approval)
     })
   }).catch((error) => {
     res.status(400).send(error)
@@ -139,25 +138,13 @@ router.patch('/:id/completed', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params
 
-  db.query('SELECT * FROM todos WHERE id = ?', [id], (error, results, _) => {
-    if (error) {
-      throw error
-    }
-
-    const [todo] = results
-
-    db.query('DELETE FROM todos WHERE id = ?', [id], (error, _, __) => {
-      if (error) {
-        throw error
-      }
-
-      res.send({
-        code: 200,
-        meta: null,
-        data: todo
-      })
+  Recipes.deleteRecipes(id).then(() => {
+    res.send({
+      code: 200
     })
-  })
+  }).catch((error) => {
+    res.status(500).send(error)
+    })
 })
 
-module.exports = router     
+module.exports = router  

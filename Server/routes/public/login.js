@@ -9,7 +9,7 @@ module.exports = (req, res) => {
     username: 'required|email',
     password: 'required'
   }).then((value) => {
-    db.query('SELECT * FROM users WHERE email = ? AND status != 0', [value.username], (error, results) => {
+    db.query('SELECT * FROM users WHERE email = ?', [value.username], (error, results) => {
       if (results.length === 0) {
         res.status(400).send('Cannot find any account that matches the given username and password')
       } else {
@@ -22,7 +22,7 @@ module.exports = (req, res) => {
               delete results[0].password
 
               const authToken = jwt.sign(data, secret)
-
+              
               res.send({
                 user: results[0],
                 token: authToken

@@ -1,9 +1,8 @@
 const router = require('express').Router()
 const { validate } = require('indicative/validator')
 const { sanitize } = require('indicative/sanitizer')
+const Users = require('../services/users')
 const bcrypt = require('bcrypt')
-
-const db = require('../../db')
 
 function removePasswordProperty(object) {
   delete object.password
@@ -78,11 +77,10 @@ router.get('/:id', (req, res, next) => {
 
 router.post('/', (req, res) => {
   const user = req.body
-
+  
   validate(user, {
     name: 'required',
     email: 'required|email',
-    genre: 'required|boolean',
     password: 'required|min:6',
     passwordSame: 'required|same:password'
   }).then((value) => {
@@ -96,14 +94,23 @@ router.post('/', (req, res) => {
     bcrypt.hash(value.password, 10).then((hash) => {
       value.password = hash
 
-      db.query('INSERT INTO users SET ?', [value], (error, results, _) => {
+      Users.createUser(value).then(() => {
+        
+        res.send({
+          code: 200
+        })
+      }).catch((error) => {
+        res.status(500).send(error)
+      })
+
+      /* db().query('INSERT INTO users SET ?', [value], (error, results, _) => {
         if (error) {
           throw error
         }
 
         const { insertId } = results
 
-        db.query('SELECT * FROM users WHERE id = ? LIMIT 1', [insertId], (error, results, _) => {
+        db().query('SELECT * FROM users WHERE userId = ? LIMIT 1', [insertId], (error, results, _) => {
           if (error) {
             throw error
           }
@@ -116,7 +123,7 @@ router.post('/', (req, res) => {
             data: results[0]
           })
         })
-      })
+      }) */
     }).catch((error) => { throw error })
 
 
@@ -147,26 +154,23 @@ router.put('/:id', (req, res) => {
       delete value.passwordSame
     }
 
-    db.query('UPDATE users SET ? WHERE id = ?', [value, id], (error, results, _) => {
+    db.query('UPDATE users SET ? WHERE userId = ?', [value, id], (error, results, _) => {
       if (error) {
         throw error
       }
 
-      db.query('SELECT * FROM users WHERE id = ? LIMIT 1', [id], (error, results, _) => {
-        if (error) {
-          throw error
-        }
+      const gettedUser = User.getUser(id)
 
-        removePasswordProperty(results[0])
+        removePasswordProperty(gettedUser)
 
         res.send({
           code: 200,
           meta: null,
-          data: results[0]
+          data: gettedUser
         })
       })
     })
-  }).catch((error) => {
+  .catch((error) => {
     res.status(400).send(error)
   })
 })
@@ -190,14 +194,14 @@ router.patch('/:id/activated', (req, res) => {
 router.delete('/:id', (req, res) => {
   const { id } = req.params
 
-  db.query('SELECT * FROM users WHERE id = ?', [id], (error, results, _) => {
+  db.query('SELECT * FROM users WHERE userId = ?', [id], (error, results, _) => {
     if (error) {
       throw error
     }
 
     const [user] = results
 
-    db.query('DELETE FROM users WHERE id = ?', [id], (error, _, __) => {
+    db.query('DELETE FROM users WHERE userId = ?', [id], (error, _, __) => {
       if (error) {
         throw error
       }

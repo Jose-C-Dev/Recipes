@@ -4,6 +4,11 @@
   "main": "index.js",
   "repository": "https://github.com/Jose-C-Dev/Recipes.git",
   "author": "Jose-C-Dev",
+  "license": "MIT",
+
+  "scripts": {
+    "dev": "nodemon ./"
+  },
 
   "dependencies": {
     "bcrypt": "^5.0.1",
