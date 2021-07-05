@@ -55,11 +55,12 @@ router.get('/:id', (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  const todo = req.body
+  const recipe = req.body
 
-  validate(todo, {
-    name: 'required',
+  validate(recipe, {
     UseruserId: 'required|integer',
+    name: 'required',
+    image: 'blob',
     visible: 'boolean',
   }).then((value) => {
     db.query('INSERT INTO recipes SET ?', [value], (error, results, _) => {
@@ -115,26 +116,6 @@ router.put('/:id', (req, res) => {
   })
 })
 
-router.patch('/:id/approval', (req, res) => {
-  const { id } = req.params
-
-  const data = req.body
-
-  validate(data, {
-    completed: 'boolean',
-  }).then((value) => {
-    db.query(`UPDATE recipes SET approval = ${value.approval} WHERE id = ${id}`, (error, results, _) => {
-      if (error) {
-        throw error
-      }
-
-      res.send(value.approval)
-    })
-  }).catch((error) => {
-    res.status(400).send(error)
-  })
-})
-
 router.delete('/:id', (req, res) => {
   const { id } = req.params
 
@@ -144,7 +125,7 @@ router.delete('/:id', (req, res) => {
     })
   }).catch((error) => {
     res.status(500).send(error)
-    })
+  })
 })
 
-module.exports = router  
+module.exports = router

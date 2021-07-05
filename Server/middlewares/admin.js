@@ -1,10 +1,11 @@
 const db = require('../db')
 const jwt = require('jsonwebtoken')
+const router = require('../routes/controllers/usersController')
 const { JsonWebTokenError } = jwt
 
 module.exports = (req, res, next) => {
   const authorization = req.header('Authorization')
-  console.log(authorization)
+
   if (!authorization) {
     res.status(400).send('JWT not provided')
 
@@ -14,20 +15,15 @@ module.exports = (req, res, next) => {
   const secret = 'B18fbWIyeU1utFA31mzGaVyzjyL9ZnfP'
 
   try {
-    const { id } = jwt.verify(authorization, secret)
+    const { role } = jwt.verify(authorization, secret)
     console.log(jwt.verify(authorization, secret))
-    console.log(id)
-    db().query('SELECT * FROM users WHERE userId = ?', [id], (error, results) => {
-      if (error) {
-        throw error
-      }
+    
+    if(role == "admin") {
+      next()
+    } else {
+      res.status(400).send('You don\'t have enough privilegies to access this resource')
+    }
 
-      if (results.length === 0) {
-        res.status(400).send('You don\'t have enough privilegies to access this resource')
-      } else {
-        next()
-      }
-    })
   } catch (error) {
     if (error instanceof JsonWebTokenError) {
       res.status(400).send('Invalid JWT provided')

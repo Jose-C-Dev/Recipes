@@ -5,11 +5,17 @@ const jwt = require('jsonwebtoken')
 const db = require('../../db')
 
 module.exports = (req, res) => {
+  console.log("ola")
   validate(req.body, {
     username: 'required|email',
     password: 'required'
   }).then((value) => {
-    db.query('SELECT * FROM users WHERE email = ?', [value.username], (error, results) => {
+    console.log(value)
+    
+    db().query('SELECT * FROM users WHERE email = ?', [value.username], (error, results) => {
+      console.log(value)
+      console.log(results)
+      console.log(db)
       if (results.length === 0) {
         res.status(400).send('Cannot find any account that matches the given username and password')
       } else {
@@ -17,7 +23,10 @@ module.exports = (req, res) => {
           .then((match) => {
             if (match) {
               const secret = 'B18fbWIyeU1utFA31mzGaVyzjyL9ZnfP'
-              const data = { id: results[0].id }
+              /* const data = { id: results[0].id } */
+              const data = { id: results[0].userId, role: results[0].admin ? 'admin' : 'user' }
+              console.log(data)
+              console.log(results)
 
               delete results[0].password
 
@@ -35,3 +44,5 @@ module.exports = (req, res) => {
     })
   }).catch((error) => res.status(400).send(error))
 }
+
+//const token = jwt.sign({ _id: user._id, role: user.role }, "secretkey");

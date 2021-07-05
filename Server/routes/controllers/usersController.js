@@ -3,6 +3,7 @@ const { validate } = require('indicative/validator')
 const { sanitize } = require('indicative/sanitizer')
 const Users = require('../services/users')
 const bcrypt = require('bcrypt')
+const Recipes = require('../services/recipes')
 
 function removePasswordProperty(object) {
   delete object.password
@@ -77,7 +78,7 @@ router.get('/:id', (req, res, next) => {
 
 router.post('/', (req, res) => {
   const user = req.body
-  
+
   validate(user, {
     name: 'required',
     email: 'required|email',
@@ -95,35 +96,13 @@ router.post('/', (req, res) => {
       value.password = hash
 
       Users.createUser(value).then(() => {
-        
+
         res.send({
           code: 200
         })
       }).catch((error) => {
         res.status(500).send(error)
       })
-
-      /* db().query('INSERT INTO users SET ?', [value], (error, results, _) => {
-        if (error) {
-          throw error
-        }
-
-        const { insertId } = results
-
-        db().query('SELECT * FROM users WHERE userId = ? LIMIT 1', [insertId], (error, results, _) => {
-          if (error) {
-            throw error
-          }
-
-          removePasswordProperty(results[0])
-
-          res.send({
-            code: 200,
-            meta: null,
-            data: results[0]
-          })
-        })
-      }) */
     }).catch((error) => { throw error })
 
 
@@ -161,28 +140,28 @@ router.put('/:id', (req, res) => {
 
       const gettedUser = User.getUser(id)
 
-        removePasswordProperty(gettedUser)
+      removePasswordProperty(gettedUser)
 
-        res.send({
-          code: 200,
-          meta: null,
-          data: gettedUser
-        })
+      res.send({
+        code: 200,
+        meta: null,
+        data: gettedUser
       })
     })
-  .catch((error) => {
-    res.status(400).send(error)
   })
+    .catch((error) => {
+      res.status(400).send(error)
+    })
 })
 
-router.patch('/:id/activated', (req, res) => {
+router.patch('/:id/visible', (req, res) => {
   const { id } = req.params
 
-  const { isActive } = req.body
+  const { visible } = req.body
 
-  const status = isActive ? 1 : 0
+  const status = visible ? 1 : 0
 
-  db.query('UPDATE users SET status = ? WHERE id = ?', [status, id], (error, results, _) => {
+  db.query('UPDATE users SET visible = ? WHERE recipeId = ?', [status, id], (error, results, _) => {
     if (error) {
       throw error
     }
@@ -212,6 +191,94 @@ router.delete('/:id', (req, res) => {
         data: user
       })
     })
+  })
+})
+
+router.delete('/:id', (req, res) => {
+  const { id } = req.params
+
+  Recipes.deleteRecipes(id).then(() => {
+    res.send({
+      code: 200
+    })
+  }).catch((error) => {
+    res.status(500).send(error)
+  })
+})
+
+router.get('/:id/recipes', (req, res) => {
+  const { id } = req.params
+
+  Recipes.getRecipesByUserId(id).then((recipes) => {
+    
+    if (recipes.length == 0) {
+      code = 204
+    } else {
+      code = 200
+    }
+    res.send({
+      code: code,
+      data: recipes
+    })
+  }).catch((error) => {
+    console.log(error);
+    res.status(500).send(error)
+  })
+})
+
+router.post('/', (req, res) => {
+  const recipe = req.body
+
+  validate(recipe, {
+    name: 'required',
+    email: 'required|email',
+    password: 'required|min:6',
+    passwordSame: 'required|same:password'
+  }).then((value) => {
+    sanitize(value, {
+      email: 'trim|lowerCase',
+      password: 'trim'
+    })
+
+    delete value.passwordSame
+
+    bcrypt.hash(value.password, 10).then((hash) => {
+      value.password = hash
+
+      Users.createUser(value).then(() => {
+
+        res.send({
+          code: 200
+        })
+      }).catch((error) => {
+        res.status(500).send(error)
+      })
+    }).catch((error) => { throw error })
+
+
+  }).catch((error) => {
+    res.status(400).send(error)
+  })
+})
+
+router.post('/', (req, res) => {
+  const recipe = req.body
+
+  validate(recipe, {
+    UseruserId: 'required',
+    name: 'required'
+  }).then((value) => {
+
+    Recipes.addRecipe(value).then(() => {
+
+        res.send({
+          code: 200
+        })
+      }).catch((error) => {
+        res.status(500).send(error)
+      })
+  }).catch((error) => {
+    res.status(400).send(error)
   })
 })
 

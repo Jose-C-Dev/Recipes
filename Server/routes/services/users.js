@@ -18,16 +18,7 @@ module.exports = {
         throw error
       }
     })
+    console.log(userCreated)
     return userCreated[0]
-  },
-
-  getUser(id){
-    db.query('SELECT * FROM users WHERE id = ? LIMIT 1', [id], (error, results, _) => {
-      if (error) {
-        throw error
-      }
-      const gettedUser = results[0]
-    })
-    return gettedUser
   }
 }
