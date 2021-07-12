@@ -241,6 +241,7 @@ module.exports = {
   //1.- Obter receitas de um user:
   async getRecipesByUserId(id) {
     const getUserRecipes = await db().promise().query('SELECT * FROM recipes WHERE UseruserId = ?', [id])
+    await this.fillRecipeIngredients(getUserRecipes[0])
     console.log(getUserRecipes[0].length)
     return getUserRecipes[0]
   },

@@ -1,8 +1,7 @@
 <template>
   <div>
-    <div class="home">
-      <img alt="Logo" src="@/assets/logorecipe.png" width="300" height="300">
-      <HelloWorld msg="RECIPES"/>
+    <div class="home" style="padding-left: 25%; padding-right: 25%;">
+      <img alt="Logo" src="@/assets/logorecipe.png" width="200" height="200">
     </div>
     <div>
       <form class="d-flex container">
@@ -15,13 +14,10 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
 
 export default {
   name: 'Home',
   components: {
-    HelloWorld
   }
 }
 </script>

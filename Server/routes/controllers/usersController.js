@@ -118,7 +118,7 @@ router.put('/:id', (req, res) => {
 
   validate(user, {
     email: 'email',
-    genre: 'boolean',
+    admin: 'boolean',
     password: 'min:6',
     passwordSame: 'requiredIf:password|same:password'
   }).then(async (value) => {
@@ -161,12 +161,12 @@ router.patch('/:id/visible', (req, res) => {
 
   const status = visible ? 1 : 0
 
-  db.query('UPDATE users SET visible = ? WHERE recipeId = ?', [status, id], (error, results, _) => {
+  db.query('UPDATE recipes SET visible = ? WHERE recipeId = ?', [status, id], (error, results, _) => {
     if (error) {
       throw error
     }
 
-    res.send(isActive)
+    res.send(isVisible)
   })
 })
 
@@ -223,41 +223,6 @@ router.get('/:id/recipes', (req, res) => {
   }).catch((error) => {
     console.log(error);
     res.status(500).send(error)
-  })
-})
-
-router.post('/', (req, res) => {
-  const recipe = req.body
-
-  validate(recipe, {
-    name: 'required',
-    email: 'required|email',
-    password: 'required|min:6',
-    passwordSame: 'required|same:password'
-  }).then((value) => {
-    sanitize(value, {
-      email: 'trim|lowerCase',
-      password: 'trim'
-    })
-
-    delete value.passwordSame
-
-    bcrypt.hash(value.password, 10).then((hash) => {
-      value.password = hash
-
-      Users.createUser(value).then(() => {
-
-        res.send({
-          code: 200
-        })
-      }).catch((error) => {
-        res.status(500).send(error)
-      })
-    }).catch((error) => { throw error })
-
-
-  }).catch((error) => {
-    res.status(400).send(error)
   })
 })
 

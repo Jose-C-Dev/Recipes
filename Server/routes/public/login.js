@@ -5,28 +5,21 @@ const jwt = require('jsonwebtoken')
 const db = require('../../db')
 
 module.exports = (req, res) => {
-  console.log("ola")
   validate(req.body, {
     username: 'required|email',
     password: 'required'
   }).then((value) => {
-    console.log(value)
     
     db().query('SELECT * FROM users WHERE email = ?', [value.username], (error, results) => {
-      console.log(value)
-      console.log(results)
-      console.log(db)
       if (results.length === 0) {
-        res.status(400).send('Cannot find any account that matches the given username and password')
+        res.status(400).send('Email or Password are incorrect!')
       } else {
         bcrypt.compare(value.password, results[0].password)
           .then((match) => {
             if (match) {
               const secret = 'B18fbWIyeU1utFA31mzGaVyzjyL9ZnfP'
-              /* const data = { id: results[0].id } */
+
               const data = { id: results[0].userId, role: results[0].admin ? 'admin' : 'user' }
-              console.log(data)
-              console.log(results)
 
               delete results[0].password
 
@@ -37,7 +30,7 @@ module.exports = (req, res) => {
                 token: authToken
               })
             } else {
-              res.status(400).send('Cannot find any account that matches the given username and password')
+              res.status(400).send('Email or Password are incorrect!')
             }
           }).catch((error) => { throw error })
       }
