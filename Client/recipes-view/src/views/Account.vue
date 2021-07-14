@@ -23,7 +23,10 @@
                 v-for="recipe, index in recipes_not_approved"
                 :key="recipe.recipeId"
                 :index="index"
-                :recipe="recipe"/>
+                :recipe="recipe"
+                :user="user"
+                :token="token"
+                @handle-change="handleChange"/>
             </div>
             <div v-else>
               <a>No Recipes to appove</a>
@@ -35,33 +38,13 @@
           <br><br>
           <div class="collapse" id="myRecipes">
             <div class="row" v-if="user_recipes.length > 0">
-              <NotApprovedList
+              <UserRecipesList
                 v-for="recipe, index in user_recipes"
                 :key="recipe.recipeId"
                 :index="index"
-                :recipe="recipe"/>
-            </div>
-            <div v-else>
-              <a>No Recipes</a>
-              <br><br>
-            </div>
-          </div>
-          <br><br>
-        </div>
-      </div>
-      <div v-else>
-        <div class="container">
-          <br><br>
-          <button class="btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#myRecipes2" aria-expanded="false"
-            aria-controls="collapseExample">Show my Recipes</button>
-          <br><br><hr>
-          <div class="collapse" id="myRecipes2">
-            <div class="row" v-if="user_recipes.length> 0">
-              <NotApprovedList
-                v-for="recipe, index in user_recipes"
-                :key="recipe.recipeId"
-                :index="index"
-                :recipe="recipe"/>
+                :recipe="recipe"
+                :user="user"
+                :token="token"/>
             </div>
             <div v-else>
               <a>No Recipes</a>
@@ -83,7 +66,7 @@
                       <input v-model="new_recipes.name" type="text" placeholder="Recipe Name" name="name" required>
 
                       <label ><b>Image</b></label>
-                      <input id="file" class="form-control" type="file" placeholder="Choose image" name="image" required>
+                      <input @change="updateFile" id="file" class="form-control" type="file" placeholder="Choose image" name="image" required>
                       <br>
                       <label ><b>Ingredients</b></label>
                       <div class="input-group" v-for="item in new_recipes.ingredients" v-bind:key="item.id" >
@@ -105,7 +88,77 @@
 
                       <div class="clearfix">
                         <button
-                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create</button><!--
+                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create Recipe</button><!--
+                        <a style="color:#f05f61; font-weight: bold;">Fields required</a> -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br><br>
+        </div>
+      </div>
+      <div v-else>
+        <div class="container">
+          <br><br>
+          <button class="btn btn-outline-success" type="button" data-bs-toggle="collapse" data-bs-target="#myRecipes2" aria-expanded="false"
+            aria-controls="collapseExample">Show my Recipes</button>
+          <br><br><hr>
+          <div class="collapse" id="myRecipes2">
+            <div class="row" v-if="user_recipes.length> 0">
+              <UserRecipesList
+                v-for="recipe, index in user_recipes"
+                :key="recipe.recipeId"
+                :index="index"
+                :recipe="recipe"
+                :user="user"
+                :token="token"/>
+            </div>
+            <div v-else>
+              <a>No Recipes</a>
+              <br><br>
+            </div>
+          </div>
+          <div>
+            <button class="w-50 btn btn-lg btn-success" type="button" data-bs-toggle='modal' data-bs-target='#createRecipeModal' >Create Recipe</button>
+            <div id="createRecipeModal" class="modal" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div id="modalC" class="modal-content">
+                  <div class="modal-body">
+                    <div class="container">
+                      <span @click="resetRecipeForm()" data-bs-dismiss="modal" aria-label="Close" class="close" title="Close Modal"><i class="fas fa-times-circle"></i></span>
+
+                      <h1 style="color:#198754">Create Recipe</h1>
+                      <hr>
+                      <label for="name"><b>Name</b></label>
+                      <input v-model="new_recipes.name" type="text" placeholder="Recipe Name" name="name" required>
+
+                      <label ><b>Image</b></label>
+                      <input @change="updateFile" id="file" class="form-control" type="file" placeholder="Choose image" name="image" required>
+                      <br>
+                      <label ><b>Ingredients</b></label>
+                      <div class="input-group" v-for="item in new_recipes.ingredients" v-bind:key="item.id" >
+                        <input class="form-control" id="iname" type="text" placeholder="Name" name="name" v-model="item.name" required>&nbsp;
+                        <input class="form-control" id="iquantity" type="number" placeholder="Quantity" min="0" name="qtd" v-model="item.quantity" required>&nbsp;
+                        <select class="form-select" id="unity" name="unity" v-model="item.unity" required>
+                          <!-- <option value="" disabled selected>Unity</option> --><!--
+                          <option value="" placeholder="Quantity" selected>Unity</option> -->
+                          <option value="un">un</option>
+                          <option value="g">g</option>
+                          <option value="Kg">Kg</option>
+                          <option value="L">L</option>
+                        </select>
+                      </div>
+                      <button @click="addIngredients()" class="w-50 btn btn-sm btn-success" type="button">Add Ingredient</button>
+                      <br><br>
+                      <label ><b>Steps</b></label>
+                      <input v-model="new_recipes.steps" type="text" placeholder="Steps" name="steps" required>
+
+                      <div class="clearfix">
+                        <button
+                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create Recipe</button><!--
                         <a style="color:#f05f61; font-weight: bold;">Fields required</a> -->
                       </div>
                     </div>
@@ -129,13 +182,15 @@
 
 <script>
 import NotApprovedList from '@/components/NotApprovedList.vue'
+import UserRecipesList from '@/components/UserRecipesList.vue'
 import swal from 'sweetalert'
 
 export default {
   name: 'Account',
 
   components: {
-    NotApprovedList
+    NotApprovedList,
+    UserRecipesList
   },
 
   data () {
@@ -155,6 +210,7 @@ export default {
 
         name: null,
         image: null,
+        file: null,
         ingredients: [
           {
             id: 1,
@@ -169,51 +225,40 @@ export default {
   },
 
   methods: {
-    getBase64Image (img) {
-      console.log(img)
-      var canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
-      var dataURL = canvas.toDataURL(img)
-      return dataURL.replace(/^data:image\/(png|jpg);base64,/, '')
+    handleChange () {
+      console.log('UPDATE CHAMADO')
+      /* this.$forceUpdate() */
+      this.$router.go()
     },
 
     createRecipe () {
-      var base64 = this.getBase64Image(document.getElementById('file'))
-
       var formData = new FormData()
-      formData.append('file', base64)
+      formData.append('file', this.new_recipes.file)
       formData.append('name', this.new_recipes.name)
       formData.append('ingredients', JSON.stringify(this.new_recipes.ingredients))
       formData.append('steps', this.new_recipes.steps)
       formData.append('UseruserId', this.user.userId)
 
-      console.log('LOG DO FILE', document.getElementById('file').value)
-      console.log('LOG DO formData', formData)
-
-      /* const recipeForm = {
-        name: this.new_recipes.name,
-        image: this.new_recipes.image,
-        ingredients: this.new_recipes.ingredients,
-        steps: this.new_recipes.steps
-      } */
-
       this.axios.post('http://localhost:3000/users/recipes', formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
             Authorization: this.token
           }
         }).then((response) => {
         if (response.data.code === 200) {
           swal('Good job!', 'Recipe Created', 'success')
+          this.resetRecipeForm()
         }
       }).catch((error) => {
         if (error.response.data.errno === 1062) {
-          swal('Oops', 'Email already exists', 'error')
+          swal('Oops', 'Recipe Error', 'error')
         }
         console.log(error.response.data.errno)
       })
+    },
+
+    updateFile (event) {
+      this.new_recipes.file = event.target.files[0]
     },
 
     getRecipesNotApproved () {
@@ -224,7 +269,6 @@ export default {
           }
         }).then((response) => {
         this.recipes_not_approved = response.data.data
-        console.log(this.recipes_not_approved)
       })
     },
 
@@ -236,7 +280,6 @@ export default {
           }
         }).then((response) => {
         this.user_recipes = response.data.data
-        console.log(this.user_recipes)
       })
     },
 
@@ -257,6 +300,24 @@ export default {
           quantity: null,
           unity: null
         })
+    },
+
+    resetRecipeForm () {
+      this.new_recipes = {
+
+        name: null,
+        image: null,
+        file: null,
+        ingredients: [
+          {
+            id: 1,
+            name: null,
+            quantity: null,
+            unity: null
+          }
+        ],
+        steps: null
+      }
     }
   },
 

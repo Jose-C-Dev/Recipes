@@ -2,29 +2,6 @@ const router = require('express').Router()
 const { validate } = require('indicative/validator')
 const Recipes = require('../services/recipes')
 
-
-/* router.get('/', (req, res) => {
-  const { limit, page } = req.query
-
-  const _limit = +limit || 20
-  const _page = +page || 1
-
-  recipes, total, pageCount = Recipes.getAllRecipes(_page, _limit)
-
-  res.send({
-    code: 200,
-    meta: {
-      pagination: {
-        total: total,
-        pages: pageCount,
-        page: _page,
-        limit: _limit
-      }
-    },
-    data: recipes
-  })
-}) */
-
 router.get('/', (req, res) => {
 
   Recipes.getAltRecipes().then((recipes) => {
@@ -36,7 +13,6 @@ router.get('/', (req, res) => {
     res.status(500).send(error)
   })
 })
-
 
 router.get('/:id', (req, res) => {
   const { id } = req.params
@@ -51,6 +27,25 @@ router.get('/:id', (req, res) => {
       meta: null,
       data: results[0]
     })
+  })
+})
+
+router.get('/ingredient/:name', (req, res) => {
+  const { name } = req.params
+
+  Recipes.getAllRecipesByIngredient(name).then((recipes) => {
+    if (recipes.length == 0) {
+      code = 204
+    } else {
+      code = 200
+    }
+    res.send({
+      code: code,
+      data: recipes
+    })
+  }).catch((error) => {
+    console.log(error);
+    res.status(500).send(error)
   })
 })
 

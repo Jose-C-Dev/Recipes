@@ -126,9 +126,6 @@ export default {
         if (error.response.data.errno === 1062) {
           swal('Oops', 'Email already exists', 'error')
         }
-        /* eslint-disable no-debugger */
-        // debugger
-        console.log(error.response.data.errno)
       })
     },
 

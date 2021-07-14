@@ -47,15 +47,18 @@ module.exports = {
     return result[0]
   },
 
-  async deleteRecipes(id, userId) {
-    const deleted = await db().promise().query('DELETE FROM recipes WHERE recipeId = ? and UseruserId = ?', [id], [userId])
-    if (deleted[0].affectedRows !== 1) {
+  async deleteRecipes(id) {
+    const deleted = await db().promise().query('DELETE FROM ingredient_recipe WHERE recipeRecipeId = ?', [id])
+    if (deleted[0].affectedRows == 0) {
       throw new Error("Couldnt delete")
-    }
+    } else {
+        await db().promise().query('DELETE FROM recipes WHERE recipeId = ?', [id])
+      }
+    return deleted[0].affectedRows
   },
 
   async searchIngredientIdByName(ingredientName) {
-    const IngredientsByName = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName])
+    const IngredientsByName = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName.toLowerCase()])
     if (IngredientsByName[0].length == 0) {
       throw new Error('No ingredients were found with that name')
     }
@@ -63,9 +66,9 @@ module.exports = {
   },
 
   async searchOrCreateIngredientByName(ingredientName) {
-    const IngredientsByNameReturned = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName])
+    const IngredientsByNameReturned = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName.toLowerCase()])
     if (IngredientsByNameReturned[0].length == 0) {
-      const createIngredientQuery = `INSERT INTO ingredients (name) VALUES ('${ingredientName}')`
+      const createIngredientQuery = `INSERT INTO ingredients (name) VALUES ('${ingredientName.toLowerCase()}')`
       const IngredientsByNameCreated = await db().promise().query(createIngredientQuery)
       return IngredientsByNameCreated[0].insertId
     }
@@ -87,11 +90,11 @@ module.exports = {
 
   //1.- Obter Info da receita:
   async returnRecipeById(recipeID) {
-    const selectedRecipes = await db().promise().query('SELECT recipeId FROM recipes WHERE recipeId = ?', [recipeID])
-    if (selectRecipe.length == 0) {
+    const selectedRecipes = await db().promise().query('SELECT * FROM recipes WHERE recipeId = ?', [recipeID])
+    if (selectedRecipes.length == 0) {
       throw new Error('No recipes were found with that ID')
     }
-    return selectedRecipes
+    return selectedRecipes[0]
   },
 
   //2.- Obter Lista de Ingredientes da receita:
@@ -203,4 +206,36 @@ module.exports = {
       }
     })
   },
+
+  async changeVisibilityFromRecipe(recipeID, visible) {
+    const selectedRecipes = await db().promise().query('UPDATE recipes SET visible = ? WHERE recipeId = ?', [visible, recipeID])
+    if (selectedRecipes[0].affectedRows == 0) {
+      throw new Error('No recipes were found with that ID')
+    }
+    return selectedRecipes
+  },
+
+  async getAllRecipesByIngredient(name) {
+    const ingredientId = await this.searchIngredientIdByName(name)
+    const recipesWithIngredient = await this.searchRecipeIdByIngredientId(ingredientId[0].ingredientId)
+    var foundRecipes = []
+    var filteredRecipes = []
+    console.log('TEST', recipesWithIngredient)
+    recipesWithIngredient.forEach(async element => {
+      foundRecipe = await this.returnRecipeById(element.recipeRecipeId)
+      foundRecipes.push(foundRecipe)
+      console.log('PROCURADO2', foundRecipes)
+    })
+    console.log('PROCURADO3', foundRecipes)
+    foundRecipes.forEach(async element => {
+      console.log('PROCURADO4', element)
+      if(element.visible === 1){
+        filteredRecipes.push(element)
+      }
+    })
+    await this.fillRecipeIngredients(filteredRecipes)
+    console.log('TUDO FILTRADO', filteredRecipes)
+    return filteredRecipes
+  },
+
 }

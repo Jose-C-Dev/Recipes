@@ -23,14 +23,12 @@ router.get('/', (req, res) => {
 
 router.patch('/:id/approval', (req, res) => {
   const { id } = req.params
-
   const data = req.body
 
   validate(data, {
     userId: 'required',
     approval: 'required|boolean'
   }).then((value) => {
-    console.log(id)
     Recipes.changeApprovalById(id, value).then(() => {
       res.send({
         code: 200

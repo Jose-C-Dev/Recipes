@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { validate } = require('indicative/validator')
 const Recipes = require('../services/recipes')
+const db = require('../../db')
 
 var multer  = require('multer')
 var fs  = require('fs')
@@ -10,16 +11,16 @@ var upload = multer({ dest: 'uploads/images' })
 router.patch('/:id/visible', (req, res) => {
   const { id } = req.params
 
-  const { visible } = req.body
+  const visible  = req.body.visible
 
-  const status = visible ? 1 : 0
+  const status = (visible === 0 ? 1 : 0)
 
-  db.query('UPDATE recipes SET visible = ? WHERE recipeId = ?', [status, id], (error, results, _) => {
-    if (error) {
-      throw error
-    }
-
-    res.send(isVisible)
+  Recipes.changeVisibilityFromRecipe(id, status).then(() => {
+    res.send({
+      code: 200
+    })
+  }).catch((error) => {
+    res.status(500).send(error)
   })
 })
 
@@ -56,30 +57,21 @@ router.get('/:id/recipes', (req, res) => {
 })
 
 router.post('/recipes', upload.single('file'), (req, res) => {
-  console.log("Aquiaaaaaa", req.body)
-  console.log("Aquibbbbbbb", req)
-  const { file, recipe } = req.body
+  const recipe = req.body
   const { filename, destination, originalname } = req.file
 
-  const ext = path.extname(originalname);
-  const source_file = `${destination}/${filename}`;
-  const target_file = `${destination}/${filename}${ext}`;
-
-  console.log(source_file + ' - ' + target_file)
+  const ext = path.extname(originalname)
+  const source_file = `${destination}/${filename}`
+  const target_file = `${destination}/${filename}${ext}`
 
   fs.renameSync(source_file, target_file)
-
-  console.log("Aquiiii", file)
-
-  console.log("Aqui", req.body)
 
   validate(recipe, {
     name: 'required',
     steps: 'required'
   }).then((value) => {
-    console.log("Aqui2", value)
 
-    value.file = `${destination}${filename}${ext}`;
+    value.file = `${filename}${ext}`;
 
     Recipes.addRecipe(value).then(() => {
 

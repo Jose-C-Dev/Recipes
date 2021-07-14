@@ -7,7 +7,7 @@ const bcrypt = require('bcrypt')
 
 router.post('/', (req, res) => {
   const userForm = req.body
-  console.log("FUI CHAMADO")
+
   validate(userForm, {
     name: 'required',
     email: 'required|email',
