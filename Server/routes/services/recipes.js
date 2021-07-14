@@ -78,7 +78,7 @@ module.exports = {
   },
 
   async searchRecipeIdByIngredientId(ingredientID) {
-    const recipesByIng = await db().promise().query('SELECT * FROM recipes WHERE recipeId IN (SELECT recipeRecipeId FROM ingredient_recipe WHERE ingredientIngredientId = ?)', [ingredientID])
+    const recipesByIng = await db().promise().query('SELECT * FROM recipes WHERE recipeId IN (SELECT recipeRecipeId FROM ingredient_recipe WHERE ingredientIngredientId = ?) AND approval = 1 AND visible = 1', [ingredientID])
     if (recipesByIng.length == 0) {
       throw new Error('No recipes were found for that ingredient')
     }
