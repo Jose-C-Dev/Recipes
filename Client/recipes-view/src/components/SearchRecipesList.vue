@@ -29,7 +29,7 @@
 
 <script>
 export default {
-  name: 'NotApprovedList',
+  name: 'SearchRecipesList',
 
   props: {
     recipe: {

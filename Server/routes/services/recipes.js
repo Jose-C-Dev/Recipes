@@ -39,34 +39,6 @@ module.exports = {
     return recipes
   },
 
-  /* getAltRecipes() {
-    var recipes = []
-    db.query('SELECT * FROM recipes', (error, results, _) => {
-      if (error) {
-        throw error
-      }
-      console.log(results)
-    })
-    return recipes
-  } */
-
-  /* getAltRecipes() {
-    return db.query('SELECT * FROM recipes',
-      function (error, results) {
-        if (error) throw error;
-        return results
-    })
-  } */
-
-
-  /* async getAltRecipes () {
-    const result = await db.promise().query('SELECT * FROM recipes');
-    if (result[0].length < 1) {
-      throw new Error('Post with this id was not found');
-    }
-    return result[0];
-  } */
-
   async getAltRecipes() {
     const result = await db().promise().query('SELECT * FROM recipes')
     if (result[0].length < 1) {
@@ -75,19 +47,31 @@ module.exports = {
     return result[0]
   },
 
-  async deleteRecipes(id) {
-    const deleted = await db().promise().query('DELETE FROM recipes WHERE recipeId = ?', [id])
+  async deleteRecipes(id, userId) {
+    const deleted = await db().promise().query('DELETE FROM recipes WHERE recipeId = ? and UseruserId = ?', [id], [userId])
     if (deleted[0].affectedRows !== 1) {
       throw new Error("Couldnt delete")
     }
   },
 
   async searchIngredientIdByName(ingredientName) {
-    const IngredientsByName = await db().promise().query('SELECT ingredientId FROM ingredient WHERE name = ?', [ingredientName])
-    if (IngredientsByName.length == 0) {
+    const IngredientsByName = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName])
+    if (IngredientsByName[0].length == 0) {
       throw new Error('No ingredients were found with that name')
     }
     return IngredientsByName[0]
+  },
+
+  async searchOrCreateIngredientByName(ingredientName) {
+    const IngredientsByNameReturned = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName])
+    if (IngredientsByNameReturned[0].length == 0) {
+      const createIngredientQuery = `INSERT INTO ingredients (name) VALUES ('${ingredientName}')`
+      const IngredientsByNameCreated = await db().promise().query(createIngredientQuery)
+      return IngredientsByNameCreated[0].insertId
+    }
+    else {
+      return IngredientsByNameReturned[0][0].ingredientId
+    }
   },
 
   async searchRecipeIdByIngredientId(ingredientID) {
@@ -169,58 +153,6 @@ module.exports = {
         recipes[index]['ingredients'] = ingredientsList[0]
       }
   },
-  /* async getRecipesNotApproved() {
-    const stepsFromRecipe = await db().promise().query(`SELECT i.name, i.ingredientId, ir.recipeRecipeId, r.name
-                                                        FROM recipes_app.ingredient_recipe ir, recipes_app.ingredients i, recipes_app.recipes r
-                                                        WHERE ir.recipeRecipeId = ( SELECT recipeId 
-                                                            FROM recipes_app.recipes r
-                                                            WHERE r.approval = 0 and r.recipeId = ir.recipeRecipeId)
-                                                        AND ir.ingredientIngredientId = i.ingredientId
-                                                        AND ir.recipeRecipeId = r.recipeId`)
-    
-    let xpto = stepsFromRecipe[0];
-   
-    let xpto0 = xpto[0];
-    console.log(xpto0.name);
-  
-
-    let result = {
-      "recipe": {
-        "ingredients": []
-      }
-    }
-
-    let result2 = {}
-    for (i = 0; i<stepsFromRecipe[0].length; i++){
-      // if(result2.)
-      let xpto = stepsFromRecipe[0];
-      let textRow = xpto[i];
-      let ingId = textRow.ingredientId;
-      // let ingName = i.name;
-      if(i != 0){
-        let lastTextRow = xpto[i-1];
-        let lastIngId = lastTextRow.ingredientId;
-        if(lastIngId==ingId){
-          result.recipe.ingredients.push( { "IngreiendId": ingId } )
-        }else{
-          //adicionar ingrediente ao novo objecto recipe
-        }
-      }else{
-        result.recipe.ingredients.push( { "IngreiendId": ingId } )
-      }
-      
-      console.log("my result : ",result);
-      console.log("my result : ",ingId);
-    }
-
-    return stepsFromRecipe[0];
-
-
-
-
-
-  }, */
-
 
   //2.- Aprovar receita:
   async changeApprovalById(id, value) {
@@ -248,16 +180,27 @@ module.exports = {
 
   // Adicionar receita:
 
-  //1.- Adicionar receita HEAD
-  async addRecipe(value) {
-    const addedRecipe = await db().promise().query('INSERT INTO recipes SET UseruserId = ?', [value.recipes])
-    console.log(addedRecipe)
-    return addedRecipe[0]
-  }
+  async createRecipe(name, image, steps, userId) {
+    if (image === null){    
+      var createRecipeQuery = `INSERT INTO recipes (name, steps, UseruserId) VALUES ('${name}', '${steps}', '${userId}')`;
+    }
+    else {
+      var createRecipeQuery = `INSERT INTO recipes (name, image, steps, UseruserId) VALUES ('${name}', '${image}', '${steps}', '${userId}')`;
+    }
+    const addedRecipe = await db().promise().query(createRecipeQuery)
+    return addedRecipe[0].insertId
+  },
 
-
-  //2.- Adicionar Ingredientes
-
-
-  //3.- Adicionar Steps
+  async addRecipe(value){
+    const addedRecipe = await this.createRecipe(value.name, value.file, value.steps, value.UseruserId)
+    /* const addedRecipe = await this.createRecipe(value.name, value.image, value.steps, value.UseruserId) */
+    var ingredientsObject = JSON.parse(value.ingredients)
+    ingredientsObject.forEach(async element => {
+      const searchedIngredient = await this.searchOrCreateIngredientByName(element.name)
+      if (searchedIngredient !== null){
+        var createIngredientRecipeRelationshipQuery = `INSERT INTO ingredient_recipe (ingredientIngredientId, recipeRecipeId, quantity, unity) VALUES ('${searchedIngredient}', '${addedRecipe}', '${element.quantity}', '${element.unity}')`
+        const addedIngredient = await db().promise().query(createIngredientRecipeRelationshipQuery)
+      }
+    })
+  },
 }

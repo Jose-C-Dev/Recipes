@@ -18,6 +18,17 @@
 export default {
   name: 'Home',
   components: {
+  },
+
+  methods: {
+
+    fillDropdown () {
+
+    }
+
+  },
+
+  created: {
   }
 }
 </script>

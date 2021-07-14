@@ -1,6 +1,6 @@
 const auth = require('../middlewares/auth')
 const admin = require('../middlewares/admin')
-const fileUpload = require('../middlewares/file_upload')
+//const fileUpload = require('../middlewares/file_upload')
 
 const usersRouter = require('./controllers/usersController')
 const recipesRouter = require('./controllers/recipesController')
@@ -11,7 +11,7 @@ const createUser = require('./public/createUser')
 
 module.exports = {
   register(app) {
-    app.use('/users', [auth, fileUpload.single('image')], usersRouter)
+    app.use('/users', auth, usersRouter)
     app.use('/admin', admin, adminRouter)
     app.use('/recipes', recipesRouter)
     app.use('/createuser', createUser)
