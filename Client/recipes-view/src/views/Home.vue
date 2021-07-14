@@ -3,14 +3,15 @@
     <div class="home" style="padding-left: 25%; padding-right: 25%;">
       <img alt="Logo" src="@/assets/logorecipe.png" width="200" height="200">
     </div>
-    <div>
-      <form class="d-flex container">
-        <input v-model="searched_name" class="form-control me-2" type="search" placeholder="Search Ingredients" aria-label="Search">
-        <button class="btn btn-outline-danger"><i class="fas fa-utensils"></i></button>
-      </form>
-      <div class="row" v-if="searched_recipes.length > 0">
+    <div class="container">
+      <div class="d-flex container">
+        <input v-model="searchedName" class="form-control me-2" type="search" placeholder="Search Ingredients" aria-label="Search">
+        <button @click="getUserRecipes()" class="btn btn-outline-danger"><i class="fas fa-utensils"></i></button>
+      </div>
+      <br><br>
+      <div class="row" v-if="searchedRecipes.length > 0">
         <SearchRecipesList
-          v-for="recipe, index in searched_recipes"
+          v-for="recipe, index in searchedRecipes"
           :key="recipe.recipeId"
           :index="index"
           :recipe="recipe"/>
@@ -29,24 +30,22 @@ export default {
     SearchRecipesList
   },
 
-    data () {
+  data () {
     return {
 
-      searched_recipes: [],
+      searchedRecipes: [],
 
-      searched_name: null
+      searchedName: null
     }
   },
 
   methods: {
     getUserRecipes () {
-      this.axios.get('http://localhost:3000/recipes/ingredient/' + searched_name
-        ).then((response) => {
-        this.searched_recipes = response.data.data
+      this.axios.get('http://localhost:3000/recipes/ingredient/' + this.searchedName
+      ).then((response) => {
+        this.searchedRecipes = response.data.data
       })
-    },
-    
-
-  },
+    }
+  }
 }
 </script>

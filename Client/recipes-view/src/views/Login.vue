@@ -92,7 +92,6 @@ export default {
       axios.post('http://localhost:3000/login', signInForm).then((response) => {
         console.log(response)
         if (response.data.user.userId !== null) {
-          console.log(response.data)
           window.localStorage.setItem('user', JSON.stringify(response.data.user))
           window.localStorage.setItem('role', response.data.user.admin)
           window.localStorage.setItem('token', response.data.token)

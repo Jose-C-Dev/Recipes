@@ -78,10 +78,11 @@ module.exports = {
   },
 
   async searchRecipeIdByIngredientId(ingredientID) {
-    const recipesByIng = await db().promise().query('SELECT recipeRecipeId FROM ingredient_recipe WHERE ingredientIngredientId = ?', [ingredientID])
+    const recipesByIng = await db().promise().query('SELECT * FROM recipes WHERE recipeId IN (SELECT recipeRecipeId FROM ingredient_recipe WHERE ingredientIngredientId = ?)', [ingredientID])
     if (recipesByIng.length == 0) {
       throw new Error('No recipes were found for that ingredient')
     }
+    await this.fillRecipeIngredients(recipesByIng[0])
     return recipesByIng[0]
   },
 
@@ -90,7 +91,7 @@ module.exports = {
 
   //1.- Obter Info da receita:
   async returnRecipeById(recipeID) {
-    const selectedRecipes = await db().promise().query('SELECT * FROM recipes WHERE recipeId = ?', [recipeID])
+    const selectedRecipes = await db().promise().query('SELECT * FROM recipes WHERE recipeId = ? AND visible = 1', [recipeID])
     if (selectedRecipes.length == 0) {
       throw new Error('No recipes were found with that ID')
     }
@@ -218,24 +219,6 @@ module.exports = {
   async getAllRecipesByIngredient(name) {
     const ingredientId = await this.searchIngredientIdByName(name)
     const recipesWithIngredient = await this.searchRecipeIdByIngredientId(ingredientId[0].ingredientId)
-    var foundRecipes = []
-    var filteredRecipes = []
-    console.log('TEST', recipesWithIngredient)
-    recipesWithIngredient.forEach(async element => {
-      foundRecipe = await this.returnRecipeById(element.recipeRecipeId)
-      foundRecipes.push(foundRecipe)
-      console.log('PROCURADO2', foundRecipes)
-    })
-    console.log('PROCURADO3', foundRecipes)
-    foundRecipes.forEach(async element => {
-      console.log('PROCURADO4', element)
-      if(element.visible === 1){
-        filteredRecipes.push(element)
-      }
-    })
-    await this.fillRecipeIngredients(filteredRecipes)
-    console.log('TUDO FILTRADO', filteredRecipes)
-    return filteredRecipes
-  },
-
+    return recipesWithIngredient
+  }
 }

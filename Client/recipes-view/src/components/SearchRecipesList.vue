@@ -2,7 +2,7 @@
   <div class="col-sm-3">
     <div class="card">
       <div class="card-body">
-        <img v-if="recipe.image != null" v-bind:src= 'recipe.image' style="border-radius: 15px;" class="bd-placeholder-img card-img-top">
+        <img v-if="recipe.image != null" :src="'http://localhost:3000/uploads/images/' + recipe.image" style="border-radius: 15px;" class="bd-placeholder-img card-img-top">
         <img v-else src="@/assets/no_picture.png" style="border-radius: 15px;" class="bd-placeholder-img card-img-top" alt='No Image'>
         <br><br>
         <h5 class="h5 btn-success">Name:</h5>
