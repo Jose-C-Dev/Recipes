@@ -31,7 +31,7 @@
 
 <script>
 import swal from 'sweetalert'
-
+// Componente que realiza a criacao das cards das receitas nao aprovadas
 export default {
   name: 'NotApprovedList',
 
@@ -59,6 +59,7 @@ export default {
   },
 
   methods: {
+    // Metodo que envia o request para o backend para aprovar receita
     approveRecipe () {
       const approveBody = {
         userId: this.body.userId,
@@ -79,7 +80,6 @@ export default {
         if (error.response.data.errno === 1062) {
           swal('Oops', 'Error Approving', 'error')
         }
-        console.log(error.response.data.errno)
       })
     },
 

@@ -28,6 +28,7 @@
 </template>
 
 <script>
+// Componente que realiza a criacao das cards das receitas na pagina de procura por ingredientes
 export default {
   name: 'SearchRecipesList',
 

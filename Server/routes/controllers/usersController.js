@@ -1,13 +1,13 @@
 const router = require('express').Router()
 const { validate } = require('indicative/validator')
 const Recipes = require('../services/recipes')
-const db = require('../../db')
 
 var multer  = require('multer')
 var fs  = require('fs')
 var path  = require('path')
 var upload = multer({ dest: 'uploads/images' })
 
+// Tornar Visivel ou não a receita de um user
 router.patch('/:id/visible', (req, res) => {
   const { id } = req.params
 
@@ -23,7 +23,7 @@ router.patch('/:id/visible', (req, res) => {
     res.status(500).send(error)
   })
 })
-
+// Delete da receita de um user
 router.delete('/:id', (req, res) => {
   const { id } = req.params
 
@@ -35,7 +35,7 @@ router.delete('/:id', (req, res) => {
     res.status(500).send(error)
   })
 })
-
+// Listar as receitas de um user
 router.get('/:id/recipes', (req, res) => {
   const { id } = req.params
 
@@ -55,7 +55,7 @@ router.get('/:id/recipes', (req, res) => {
     res.status(500).send(error)
   })
 })
-
+// Criar a receita para um user
 router.post('/recipes', upload.single('file'), (req, res) => {
   const recipe = req.body
   const { filename, destination, originalname } = req.file

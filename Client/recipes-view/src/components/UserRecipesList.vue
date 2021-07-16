@@ -36,7 +36,7 @@
 
 <script>
 import swal from 'sweetalert'
-
+// Componente que realiza a criacao das cards das receitas de Users
 export default {
   name: 'UserRecipesList',
 
@@ -55,12 +55,11 @@ export default {
   },
 
   methods: {
+    // Metodo que envia o request para o backend que realiza a alteracao da visibilidade das receitas de um user
     changeRecipeVisibility () {
       const visibleBody = {
         visible: this.recipe.visible
       }
-      console.log('FUI CHAMADO E SOU VISIBLE', visibleBody)
-      console.log('FUI CHAMADO E SOU RECIPEID', this.recipe.recipeId)
 
       this.axios.patch('http://localhost:3000/users/' + this.recipe.recipeId + '/visible', visibleBody,
         {
@@ -69,7 +68,7 @@ export default {
           }
         }).then((response) => {
         if (response.data.code === 200) {
-          swal('Good job!', 'Change visibility', 'success')
+          swal('Good job!', 'Changed visibility', 'success')
         }
       }).catch((error) => {
         if (error.response.data.errno === 1062) {
@@ -78,7 +77,7 @@ export default {
         console.log(error.response.data.errno)
       })
     },
-
+    // Metodo que envia o request para o backend que realiza o delete das receitas de um user
     deleteRecipes () {
       this.axios.delete('http://localhost:3000/recipes/' + this.recipe.recipeId,
         {
@@ -100,7 +99,6 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h5 {
   /* color: #198754 */

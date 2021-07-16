@@ -63,10 +63,10 @@
 import axios from 'axios'
 import swal from 'sweetalert'
 /* import { mapMutations } from 'vuex' */
-
+// Pagina onde se pode realizar o Login ou Criar uma conta de novo user
 export default {
   name: 'Login',
-
+  // Data onde guarda os dados inseridos no input do login e nos inputs de criacao de uma conta
   data () {
     return {
       signIn: {
@@ -84,13 +84,13 @@ export default {
   },
 
   methods: {
+    // Metodo que envia o request para o backend para obter info do login e guarda(setitem) no user, role, token com o que vem da response do backend
     signUser: function () {
       const signInForm = {
         username: this.signIn.email,
         password: this.signIn.password
       }
       axios.post('http://localhost:3000/login', signInForm).then((response) => {
-        console.log(response)
         if (response.data.user.userId !== null) {
           window.localStorage.setItem('user', JSON.stringify(response.data.user))
           window.localStorage.setItem('role', response.data.user.admin)
@@ -103,12 +103,9 @@ export default {
         }
       }).catch((error) => {
         swal('Oops', error.response.data, 'error')
-        /* eslint-disable no-debugger */
-        // debugger
-        console.log(error.response)
       })
     },
-
+    // Metodo que envia o request para o backend para realizar a criacao de uma nova conta
     createUser: function () {
       const userForm = {
         name: this.createUserForm.name,
@@ -127,7 +124,7 @@ export default {
         }
       })
     },
-
+    // Metodo que da wipe a data do form de onde se cria uma receita
     resetCreateUserForm () {
       this.createUserForm = {
         name: null,
@@ -136,7 +133,7 @@ export default {
         passwordSame: null
       }
     },
-
+    // Metodo que da wipe a data dos inputs de onde se realiza o login
     resetSignIn () {
       this.signIn = {
         email: null,

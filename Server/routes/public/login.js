@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 const db = require('../../db')
-
+// Validacao dos dados que sao inseridos na realizacao de um login e devolve informacao de um user e a respetiva token com a role do user 
 module.exports = (req, res) => {
   validate(req.body, {
     username: 'required|email',
@@ -37,5 +37,3 @@ module.exports = (req, res) => {
     })
   }).catch((error) => res.status(400).send(error))
 }
-
-//const token = jwt.sign({ _id: user._id, role: user.role }, "secretkey");

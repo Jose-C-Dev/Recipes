@@ -4,7 +4,7 @@ const { sanitize } = require('indicative/sanitizer')
 const Users = require('../services/users')
 const bcrypt = require('bcrypt')
 
-
+// Controlador que realiza validacoes e sanitize para depois o servico guardar os dados de um novo user na BD bem formatados
 router.post('/', (req, res) => {
   const userForm = req.body
 

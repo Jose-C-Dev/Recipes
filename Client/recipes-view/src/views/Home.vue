@@ -22,14 +22,14 @@
 
 <script>
 import SearchRecipesList from '@/components/SearchRecipesList.vue'
-
+// Pagina onde se pode realizar a procura de receitas por ingredientes
 export default {
   name: 'Home',
 
   components: {
     SearchRecipesList
   },
-
+  // Data onde guarda num array as receitas devolvidas pelo metodo e onde guarda o que e preenchido no input de pesquisa
   data () {
     return {
 
@@ -38,7 +38,7 @@ export default {
       searchedName: null
     }
   },
-
+  // Metodo envia o request para o backend para obter as receitas
   methods: {
     getUserRecipes () {
       this.axios.get('http://localhost:3000/recipes/ingredient/' + this.searchedName

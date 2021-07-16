@@ -1,6 +1,5 @@
 const auth = require('../middlewares/auth')
 const admin = require('../middlewares/admin')
-//const fileUpload = require('../middlewares/file_upload')
 
 const usersRouter = require('./controllers/usersController')
 const recipesRouter = require('./controllers/recipesController')
@@ -11,10 +10,10 @@ const createUser = require('./public/createUser')
 
 module.exports = {
   register(app) {
-    app.use('/users', auth, usersRouter)
-    app.use('/admin', admin, adminRouter)
-    app.use('/recipes', recipesRouter)
-    app.use('/createuser', createUser)
-    app.post('/login', login)
+    app.use('/users', auth, usersRouter) // Rota para users
+    app.use('/admin', admin, adminRouter) // Rota para admins
+    app.use('/recipes', recipesRouter) // Rota para visitantes
+    app.use('/createuser', createUser) // Rota para criar uma nova conta de user
+    app.post('/login', login) // Rota realizar o login
   }
 }

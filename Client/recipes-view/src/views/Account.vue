@@ -88,8 +88,7 @@
 
                       <div class="clearfix">
                         <button
-                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create Recipe</button><!--
-                        <a style="color:#f05f61; font-weight: bold;">Fields required</a> -->
+                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create Recipe</button>
                       </div>
                     </div>
                   </div>
@@ -158,8 +157,7 @@
 
                       <div class="clearfix">
                         <button
-                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create Recipe</button><!--
-                        <a style="color:#f05f61; font-weight: bold;">Fields required</a> -->
+                        @click="createRecipe()" id="signup" type="submit" class="signup btn btn-success">Create Recipe</button>
                       </div>
                     </div>
                   </div>
@@ -184,7 +182,7 @@
 import NotApprovedList from '@/components/NotApprovedList.vue'
 import UserRecipesList from '@/components/UserRecipesList.vue'
 import swal from 'sweetalert'
-
+// Pagina account onde demonstra os componentes pretendidos dependendo do user que realiza o login
 export default {
   name: 'Account',
 
@@ -195,17 +193,17 @@ export default {
 
   data () {
     return {
-
+      // Data onde guarda info do user, role, e token preenchida quando aberta esta pagina
       user: {},
 
       role: null,
 
       token: null,
-
+      // Arrays onde guardam receitas
       recipes_not_approved: [],
 
       user_recipes: [],
-
+      // Array onde e preenchido com dados de uma nova receita
       new_recipes: {
 
         name: null,
@@ -230,7 +228,7 @@ export default {
       /* this.$forceUpdate() */
       this.$router.go()
     },
-
+    // Metodo que envia o request para o backend para fazer a criacao de uma nova receita
     createRecipe () {
       var formData = new FormData()
       formData.append('file', this.new_recipes.file)
@@ -260,7 +258,7 @@ export default {
     updateFile (event) {
       this.new_recipes.file = event.target.files[0]
     },
-
+    // Metodo que envia o request para o backend para obter a listagem de receitas nao aprovadas
     getRecipesNotApproved () {
       this.axios.get('http://localhost:3000/admin',
         {
@@ -271,7 +269,7 @@ export default {
         this.recipes_not_approved = response.data.data
       })
     },
-
+    // Metodo que envia o request para o backend para obter a listagem de receitas de um user
     getUserRecipes () {
       this.axios.get('http://localhost:3000/users/' + this.user.userId + '/recipes',
         {
@@ -282,7 +280,7 @@ export default {
         this.user_recipes = response.data.data
       })
     },
-
+    // Metodo que da wipe a data user, role, token e envia para a rota Login
     logOut () {
       window.localStorage.removeItem('user')
       window.localStorage.removeItem('role')
@@ -290,7 +288,7 @@ export default {
 
       this.$router.push({ name: 'Login' })
     },
-
+    // Metodo que faz o push dos ingredientes e assim da para adicionar varios
     addIngredients () {
       const _id = this.new_recipes.ingredients.length + 1
       this.new_recipes.ingredients.push(
@@ -301,7 +299,7 @@ export default {
           unity: null
         })
     },
-
+    // Metodo que da wipe a data do form de onde se cria receitas
     resetRecipeForm () {
       this.new_recipes = {
 
@@ -320,7 +318,7 @@ export default {
       }
     }
   },
-
+  // Este created vai fazer get aos items user, role, token que sao set no login e executa no criar da pagina os metodos getRecipesNotApproved e getUserRecipes
   created () {
     this.user = JSON.parse(window.localStorage.getItem('user'))
     this.role = window.localStorage.getItem('role')

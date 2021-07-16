@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { validate } = require('indicative/validator')
 const Recipes = require('../services/recipes')
 
+// Listar receitas que estao por aprovar
 router.get('/', (req, res) => {
 
   Recipes.getRecipesNotApproved().then((recipes) => {
@@ -20,7 +21,7 @@ router.get('/', (req, res) => {
     res.status(500).send(error)
   })
 })
-
+// Aprovar receita e aplicar o admin que aprovou mais a data e hora de quando foi aprovada:
 router.patch('/:id/approval', (req, res) => {
   const { id } = req.params
   const data = req.body

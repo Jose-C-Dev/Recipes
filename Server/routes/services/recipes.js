@@ -2,7 +2,7 @@ const db = require('../../db')
 
 
 module.exports = {
-
+// Futuro uso
   getAllRecipes(page, limit) {
     offset, total, pageCount = this.getPageCount(page, limit)
     recipes = this.getRecipes(offset, limit)
@@ -15,13 +15,13 @@ module.exports = {
     var total = 0;
     var pageCount = 0;
 
-    db.query('SELECT COUNT(id) FROM recipes', (error, countResults, _) => {
+    db.query('SELECT COUNT(recipeId) FROM recipes', (error, countResults, _) => {
       if (error) {
         throw error
       }
 
       offset = (page - 1) * limit
-      total = countResults[0]['COUNT(id)']
+      total = countResults[0]['COUNT(recipeId)']
       pageCount = Math.ceil(total / limit)
     })
     return offset, total, pageCount
@@ -38,7 +38,7 @@ module.exports = {
     })
     return recipes
   },
-
+// Testes
   async getAltRecipes() {
     const result = await db().promise().query('SELECT * FROM recipes')
     if (result[0].length < 1) {
@@ -46,7 +46,7 @@ module.exports = {
     }
     return result[0]
   },
-
+// Delete da receita de um user
   async deleteRecipes(id) {
     const deleted = await db().promise().query('DELETE FROM ingredient_recipe WHERE recipeRecipeId = ?', [id])
     if (deleted[0].affectedRows == 0) {
@@ -56,7 +56,7 @@ module.exports = {
       }
     return deleted[0].affectedRows
   },
-
+// Procurar receitas por nome de ingrediente
   async searchIngredientIdByName(ingredientName) {
     const IngredientsByName = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName.toLowerCase()])
     if (IngredientsByName[0].length == 0) {
@@ -64,7 +64,7 @@ module.exports = {
     }
     return IngredientsByName[0]
   },
-
+// Procurar ingredientes se existem, se nao cria.
   async searchOrCreateIngredientByName(ingredientName) {
     const IngredientsByNameReturned = await db().promise().query('SELECT ingredientId FROM ingredients WHERE name = ?', [ingredientName.toLowerCase()])
     if (IngredientsByNameReturned[0].length == 0) {
@@ -76,7 +76,7 @@ module.exports = {
       return IngredientsByNameReturned[0][0].ingredientId
     }
   },
-
+// Procurar ingredientes
   async searchRecipeIdByIngredientId(ingredientID) {
     const recipesByIng = await db().promise().query('SELECT * FROM recipes WHERE recipeId IN (SELECT recipeRecipeId FROM ingredient_recipe WHERE ingredientIngredientId = ?) AND approval = 1 AND visible = 1', [ingredientID])
     if (recipesByIng.length == 0) {
@@ -158,17 +158,9 @@ module.exports = {
       }
   },
 
-  //2.- Aprovar receita:
+  //2.- Aprovar receita e aplicar o admin que aprovou mais a data e hora de quando foi aprovada:
   async changeApprovalById(id, value) {
-    console.log(value.approval)
-    console.log(id)
     const changedApproval = await db().promise().query(`UPDATE recipes SET approval = ${value.approval}, aprovedBy = ${value.userId}, dateOfApproval = now() WHERE recipeId = ${id}`)
-    /* console.log("aqui", changedApproval[0].affectedRows) */
-    /* if (changedApproval[0].ResultSetHeader.affectedRows != 1) {
-      console.log("asd")
-      throw new Error("Couldnt approve")
-    } */
-    /* console.log("aqui2", changedApproval) */
     return changedApproval[0].affectedRows
   },
 
@@ -178,7 +170,6 @@ module.exports = {
   async getRecipesByUserId(id) {
     const getUserRecipes = await db().promise().query('SELECT * FROM recipes WHERE UseruserId = ?', [id])
     await this.fillRecipeIngredients(getUserRecipes[0])
-    console.log(getUserRecipes[0].length)
     return getUserRecipes[0]
   },
 
@@ -197,7 +188,6 @@ module.exports = {
 
   async addRecipe(value){
     const addedRecipe = await this.createRecipe(value.name, value.file, value.steps, value.UseruserId)
-    /* const addedRecipe = await this.createRecipe(value.name, value.image, value.steps, value.UseruserId) */
     var ingredientsObject = JSON.parse(value.ingredients)
     ingredientsObject.forEach(async element => {
       const searchedIngredient = await this.searchOrCreateIngredientByName(element.name)
@@ -207,7 +197,7 @@ module.exports = {
       }
     })
   },
-
+// Tornar Visivel ou não a receita de um user
   async changeVisibilityFromRecipe(recipeID, visible) {
     const selectedRecipes = await db().promise().query('UPDATE recipes SET visible = ? WHERE recipeId = ?', [visible, recipeID])
     if (selectedRecipes[0].affectedRows == 0) {
@@ -215,7 +205,7 @@ module.exports = {
     }
     return selectedRecipes
   },
-
+// Procurar receitas por nome de ingrediente
   async getAllRecipesByIngredient(name) {
     const ingredientId = await this.searchIngredientIdByName(name)
     const recipesWithIngredient = await this.searchRecipeIdByIngredientId(ingredientId[0].ingredientId)
